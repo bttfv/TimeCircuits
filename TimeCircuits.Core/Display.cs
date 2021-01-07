@@ -12,7 +12,7 @@ namespace TimeCircuits
         On
     }
 
-    public class Game : Microsoft.Xna.Framework.Game
+    public class Display : Microsoft.Xna.Framework.Game
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -46,13 +46,12 @@ namespace TimeCircuits
 
         private DateTime[] dates = new DateTime[3];
 
-        public bool IsVisible = false;
-        public bool IsTickVisible = false;
-        public EmptyType EmptyType = EmptyType.Hide;
+        public bool IsHUDVisible { get; set; } = false;
+        public bool IsTickVisible { get; set; } = false;
+        public EmptyType Empty { get; set; } = EmptyType.Hide;
+        public int Speed { get; set; } = 0;
 
-        public int Speed = 0;
-
-        public Game()
+        public Display()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -219,9 +218,9 @@ namespace TimeCircuits
 
         public void SetOff()
         {
-            IsVisible = false;
+            IsHUDVisible = false;
             IsTickVisible = false;
-            EmptyType = EmptyType.Hide;
+            Empty = EmptyType.Hide;
 
             for (int row = 0; row < 3; row++)
                 dates[row] = default;
@@ -236,7 +235,7 @@ namespace TimeCircuits
 
             _spriteBatch.Draw(logo, Vector2.Zero, null, Color.White, 0, Vector2.Zero, backgroundScale, SpriteEffects.None, 1);
 
-            if (IsVisible)
+            if (IsHUDVisible)
             {                
                 _spriteBatch.Draw(speedo, Vector2.Zero, null, Color.White, 0, Vector2.Zero, speedoScale, SpriteEffects.None, 1);
 
@@ -251,12 +250,12 @@ namespace TimeCircuits
                     }
                 }
 
-                if (EmptyType > EmptyType.Hide)
+                if (Empty > EmptyType.Hide)
                 {
                     float emptyX = speedo.Width * speedoScale + (background.Width * backgroundScale - speedo.Width * speedoScale) / 2 - (empty.Width * emptyScale) / 2;
                     float emptyY = (speedo.Height * speedoScale) / 2 - (empty.Height * emptyScale) / 2;
 
-                    _spriteBatch.Draw(EmptyType == EmptyType.Off ? empty : emptyGlow, new Vector2(emptyX, emptyY), null, Color.White, 0, Vector2.Zero, emptyScale, SpriteEffects.None, 1);
+                    _spriteBatch.Draw(Empty == EmptyType.Off ? empty : emptyGlow, new Vector2(emptyX, emptyY), null, Color.White, 0, Vector2.Zero, emptyScale, SpriteEffects.None, 1);
                 }                
 
                 _spriteBatch.Draw(background, new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, backgroundScale, SpriteEffects.None, 1);

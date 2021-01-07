@@ -4,11 +4,14 @@ namespace TimeCircuits.Desktop
 {
     public static class Program
     {
-        //[STAThread]
+        [STAThread]
         static void Main()
         {
-            using (var game = new Game())
+            using (var game = new Display())
+            {
+                game.IsHUDVisible = true;
                 game.Run();
+            }                
         }
     }
 }
