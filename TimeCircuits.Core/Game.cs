@@ -5,14 +5,26 @@ using System;
 
 namespace TimeCircuits
 {
+    public enum EmptyType
+    {
+        Hide,
+        Off,
+        On
+    }
+
     public class Game : Microsoft.Xna.Framework.Game
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
+        private Texture2D logo;
+
         private Texture2D background;
         private Texture2D speedo;
         private Texture2D tick;
+
+        private Texture2D empty;
+        private Texture2D emptyGlow;
 
         private bool[] monthVisible = new bool[3];
         private bool[] dayVisible = new bool[3];
@@ -29,12 +41,14 @@ namespace TimeCircuits
 
         private float backgroundScale = 0.75f;
         private float speedoScale;
+        private float emptyScale;
         private float scale;
 
         private DateTime[] dates = new DateTime[3];
 
-        public bool IsTickVisible = false;
         public bool IsVisible = false;
+        public bool IsTickVisible = false;
+        public EmptyType EmptyType = EmptyType.Hide;
 
         public int Speed = 0;
 
@@ -46,6 +60,7 @@ namespace TimeCircuits
 
             scale = backgroundScale * 0.9f;
             speedoScale = backgroundScale * 0.7f;
+            emptyScale = backgroundScale * 1.33f;
         }
 
         protected override void Initialize()
@@ -75,8 +90,13 @@ namespace TimeCircuits
 
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            logo = Content.Load<Texture2D>("Backgrounds/BTTFV");
+
             background = Content.Load<Texture2D>("Backgrounds/tcd");
             tick = Content.Load<Texture2D>("Backgrounds/tcd_tick");
+
+            empty = Content.Load<Texture2D>("Empty/empty_off");
+            emptyGlow = Content.Load<Texture2D>("Empty/empty_glow");
 
             speedo = Content.Load<Texture2D>("Backgrounds/speedo");
 
@@ -118,6 +138,9 @@ namespace TimeCircuits
                 ampm[row][1] = Content.Load<Texture2D>($"TimeCircuits/{color}/pm");
             }
 
+            Window.Title = "Back To The Future V: Heads-Up Display";
+            Window.AllowUserResizing = false;
+
             _graphics.PreferredBackBufferWidth = (int)(background.Width * backgroundScale);
             _graphics.PreferredBackBufferHeight = (int)(background.Height * backgroundScale + speedo.Height * speedoScale);
             _graphics.ApplyChanges();
@@ -145,7 +168,7 @@ namespace TimeCircuits
             hourVisible[row] = true;
             minuteVisible[row] = true;
             ampmVisible[row] = true;
-            IsVisible = true;
+            //IsVisible = true;
         }
 
         public void SetVisible(string type, bool toggle, bool month = true, bool day = true, bool year = true, bool hour = true, bool minute = true, bool amPm = true)
@@ -198,6 +221,7 @@ namespace TimeCircuits
         {
             IsVisible = false;
             IsTickVisible = false;
+            EmptyType = EmptyType.Hide;
 
             for (int row = 0; row < 3; row++)
                 dates[row] = default;
@@ -207,11 +231,13 @@ namespace TimeCircuits
         {
             GraphicsDevice.Clear(Color.Black);
 
-            if (IsVisible)
-            {
-                // TODO: Add your drawing code here
-                _spriteBatch.Begin(SpriteSortMode.Immediate);
+            // TODO: Add your drawing code here
+            _spriteBatch.Begin(SpriteSortMode.Immediate);
 
+            _spriteBatch.Draw(logo, Vector2.Zero, null, Color.White, 0, Vector2.Zero, backgroundScale, SpriteEffects.None, 1);
+
+            if (IsVisible)
+            {                
                 _spriteBatch.Draw(speedo, Vector2.Zero, null, Color.White, 0, Vector2.Zero, speedoScale, SpriteEffects.None, 1);
 
                 if (Speed < 10)
@@ -224,6 +250,14 @@ namespace TimeCircuits
                         _spriteBatch.Draw(speedoNumbers[pos], GetSpeedoPos(num), null, Color.White, 0, Vector2.Zero, speedoScale, SpriteEffects.None, 1);
                     }
                 }
+
+                if (EmptyType > EmptyType.Hide)
+                {
+                    float emptyX = speedo.Width * speedoScale + (background.Width * backgroundScale - speedo.Width * speedoScale) / 2 - (empty.Width * emptyScale) / 2;
+                    float emptyY = (speedo.Height * speedoScale) / 2 - (empty.Height * emptyScale) / 2;
+
+                    _spriteBatch.Draw(EmptyType == EmptyType.Off ? empty : emptyGlow, new Vector2(emptyX, emptyY), null, Color.White, 0, Vector2.Zero, emptyScale, SpriteEffects.None, 1);
+                }                
 
                 _spriteBatch.Draw(background, new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, backgroundScale, SpriteEffects.None, 1);
 
@@ -295,9 +329,9 @@ namespace TimeCircuits
 
                 if (IsTickVisible)
                     _spriteBatch.Draw(tick, new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, backgroundScale, SpriteEffects.None, 1);
-
-                _spriteBatch.End();
             }
+
+            _spriteBatch.End();
 
             base.Draw(gameTime);
         }
