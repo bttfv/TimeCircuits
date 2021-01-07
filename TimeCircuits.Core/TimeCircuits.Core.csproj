@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Content\Content.mgcb" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="IF NOT &quot;%25GTAPath%25&quot; == &quot;&quot; (&#xD;&#xA;    IF NOT EXIST &quot;%25GTAPath%25&quot; (&#xD;&#xA;        MKDIR &quot;%25GTAPath%25&quot;&#xD;&#xA;    ) &#xD;&#xA;copy &quot;$(TargetPath)&quot; &quot;%25GTAPath%25\scripts\$(TargetFileName)&quot;&#xD;&#xA;copy &quot;$(TargetDir)\$(TargetName).pdb&quot; &quot;%25GTAPath%25\scripts\$(TargetName).pdb&quot;&#xD;&#xA;)" />
+  </Target>
+</Project>
