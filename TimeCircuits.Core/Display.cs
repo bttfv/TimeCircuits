@@ -12,7 +12,7 @@ namespace TimeCircuits
         On
     }
 
-    public class Display : Microsoft.Xna.Framework.Game
+    public class Display : Game
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
@@ -343,6 +343,7 @@ namespace TimeCircuits
             base.Draw(gameTime);
         }
 
+        #region "Position routines"
         public Vector2 GetRowOffset(int row)
         {
             switch (row)
@@ -415,5 +416,6 @@ namespace TimeCircuits
                     return new Vector2(78, 0) + GetMinutePos(row, num - 1);
             }
         }
+        #endregion
     }
 }
