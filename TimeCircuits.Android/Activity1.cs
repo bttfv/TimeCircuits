@@ -3,6 +3,7 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Views;
 using Microsoft.Xna.Framework;
+using System;
 
 namespace TimeCircuits.Android
 {
@@ -17,17 +18,27 @@ namespace TimeCircuits.Android
     )]
     public class Activity1 : AndroidGameActivity
     {
-        private Game _game;
+        private Display _game;
         private View _view;
 
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
 
-            _game = new Game();
+            _game = new Display();
             _view = _game.Services.GetService(typeof(View)) as View;
 
             SetContentView(_view);
+
+            _game.IsHUDVisible = true;
+            _game.IsTickVisible = true;
+            _game.Empty = EmptyType.Off;
+            _game.Speed = 88;
+
+            _game.SetDate("red", DateTime.Now);
+            _game.SetDate("green", DateTime.Now);
+            _game.SetDate("yellow", DateTime.Now);
+
             _game.Run();
         }
     }

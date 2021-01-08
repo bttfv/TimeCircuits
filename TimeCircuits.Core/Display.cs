@@ -39,12 +39,9 @@ namespace TimeCircuits
         private Texture2D[][] months;
         private Texture2D[][] ampm;
 
-        private float backgroundScale = 0.75f;
-        private float speedoScale;
-        private float emptyScale;
-        private float scale;
-
         private DateTime[] dates = new DateTime[3];
+
+        private float speedoScale = 0.7f;
 
         public bool IsHUDVisible { get; set; } = false;
         public bool IsTickVisible { get; set; } = false;
@@ -56,31 +53,15 @@ namespace TimeCircuits
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-
-            scale = backgroundScale * 0.9f;
-            speedoScale = backgroundScale * 0.7f;
-            emptyScale = backgroundScale * 1.33f;
         }
 
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            Window.Title = "Back To The Future V: Heads-Up Display";
+            Window.AllowUserResizing = true;
+
             base.Initialize();
-        }
-
-        private int RowNameToInt(string name)
-        {
-            name = name.ToLower();
-
-            switch (name)
-            {
-                case "red":
-                    return 0;
-                case "green":
-                    return 1;
-                default:
-                    return 2;
-            }
         }
 
         protected override void LoadContent()
@@ -137,11 +118,9 @@ namespace TimeCircuits
                 ampm[row][1] = Content.Load<Texture2D>($"TimeCircuits/{color}/pm");
             }
 
-            Window.Title = "Back To The Future V: Heads-Up Display";
-            Window.AllowUserResizing = false;
-
-            _graphics.PreferredBackBufferWidth = (int)(background.Width * backgroundScale);
-            _graphics.PreferredBackBufferHeight = (int)(background.Height * backgroundScale + speedo.Height * speedoScale);
+            //_graphics.ToggleFullScreen();
+            _graphics.PreferredBackBufferWidth = background.Width / 2;
+            _graphics.PreferredBackBufferHeight = (int)((background.Height + speedo.Height * speedoScale) / 2);
             _graphics.ApplyChanges();
         }
 
@@ -153,6 +132,21 @@ namespace TimeCircuits
             // TODO: Add your update logic here
 
             base.Update(gameTime);
+        }
+
+        private int RowNameToInt(string name)
+        {
+            name = name.ToLower();
+
+            switch (name)
+            {
+                case "red":
+                    return 0;
+                case "green":
+                    return 1;
+                default:
+                    return 2;
+            }
         }
 
         public void SetDate(string type, DateTime date)
@@ -167,7 +161,6 @@ namespace TimeCircuits
             hourVisible[row] = true;
             minuteVisible[row] = true;
             ampmVisible[row] = true;
-            //IsVisible = true;
         }
 
         public void SetVisible(string type, bool toggle, bool month = true, bool day = true, bool year = true, bool hour = true, bool minute = true, bool amPm = true)
@@ -226,14 +219,29 @@ namespace TimeCircuits
                 dates[row] = default;
         }
 
+        private Matrix CurrentScale()
+        {
+            var gameWorldSize = new Vector2(background.Width, background.Height + speedo.Height * speedoScale);
+            var vp = GraphicsDevice.Viewport;
+
+            float scaleX = vp.Width / gameWorldSize.X;
+            float scaleY = vp.Height / gameWorldSize.Y;
+            float scale = Math.Min(scaleX, scaleY);
+
+            float translateX = (vp.Width - (gameWorldSize.X * scale)) / 2f;
+            float translateY = (vp.Height - (gameWorldSize.Y * scale)) / 2f;
+
+            return Matrix.CreateScale(scale, scale, 1) * Matrix.CreateTranslation(translateX, translateY, 0);
+        }
+
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.Black);
+            GraphicsDevice.Clear(Color.Transparent);
 
             // TODO: Add your drawing code here
-            _spriteBatch.Begin(SpriteSortMode.Immediate);
+            _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, CurrentScale());
 
-            _spriteBatch.Draw(logo, Vector2.Zero, null, Color.White, 0, Vector2.Zero, backgroundScale, SpriteEffects.None, 1);
+            _spriteBatch.Draw(logo, Vector2.Zero, null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
 
             if (IsHUDVisible)
             {                
@@ -250,15 +258,15 @@ namespace TimeCircuits
                     }
                 }
 
-                if (Empty > EmptyType.Hide)
+                if (Empty != EmptyType.Hide)
                 {
-                    float emptyX = speedo.Width * speedoScale + (background.Width * backgroundScale - speedo.Width * speedoScale) / 2 - (empty.Width * emptyScale) / 2;
-                    float emptyY = (speedo.Height * speedoScale) / 2 - (empty.Height * emptyScale) / 2;
+                    float emptyX = speedo.Width * speedoScale + (background.Width - speedo.Width * speedoScale) / 2 - (empty.Width * 1.5f) / 2;
+                    float emptyY = (speedo.Height * speedoScale) / 2 - (empty.Height * 1.5f) / 2;
 
-                    _spriteBatch.Draw(Empty == EmptyType.Off ? empty : emptyGlow, new Vector2(emptyX, emptyY), null, Color.White, 0, Vector2.Zero, emptyScale, SpriteEffects.None, 1);
-                }                
+                    _spriteBatch.Draw(Empty == EmptyType.Off ? empty : emptyGlow, new Vector2(emptyX, emptyY), null, Color.White, 0, Vector2.Zero, 1.5f, SpriteEffects.None, 1);
+                }
 
-                _spriteBatch.Draw(background, new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, backgroundScale, SpriteEffects.None, 1);
+                _spriteBatch.Draw(background, new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
 
                 for (int row = 0; row < 3; row++)
                 {
@@ -268,40 +276,40 @@ namespace TimeCircuits
                         break;
 
                     if (monthVisible[row])
-                        _spriteBatch.Draw(months[row][dateTime.Month - 1], GetMonthPos(row), null, Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 1);
+                        _spriteBatch.Draw(months[row][dateTime.Month - 1], GetMonthPos(row), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
 
                     if (dayVisible[row])
                     {
                         if (dateTime.Day < 10)
                         {
-                            _spriteBatch.Draw(numbers[row][0], GetDayPos(row, 0), null, Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 1);
-                            _spriteBatch.Draw(numbers[row][dateTime.Day], GetDayPos(row, 1), null, Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 1);
+                            _spriteBatch.Draw(numbers[row][0], GetDayPos(row, 0), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
+                            _spriteBatch.Draw(numbers[row][dateTime.Day], GetDayPos(row, 1), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
                         }
                         else
                         {
                             for (int num = 0; num < 2; num++)
                             {
                                 int pos = (int)Char.GetNumericValue(dateTime.Day.ToString()[num]);
-                                _spriteBatch.Draw(numbers[row][pos], GetDayPos(row, num), null, Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 1);
+                                _spriteBatch.Draw(numbers[row][pos], GetDayPos(row, num), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
                             }
                         }
                     }
 
-                    if (minuteVisible[row])
+                    if (yearVisible[row])
                     {
                         for (int num = 0; num < 4; num++)
                         {
                             int pos = (int)Char.GetNumericValue(dateTime.Year.ToString()[num]);
-                            _spriteBatch.Draw(numbers[row][pos], GetYearPos(row, num), null, Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 1);
+                            _spriteBatch.Draw(numbers[row][pos], GetYearPos(row, num), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
                         }
                     }
 
                     if (ampmVisible[row])
                     {
                         if (dateTime.Hour > 12)
-                            _spriteBatch.Draw(ampm[row][1], new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, backgroundScale, SpriteEffects.None, 1);
+                            _spriteBatch.Draw(ampm[row][1], new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
                         else
-                            _spriteBatch.Draw(ampm[row][0], new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, backgroundScale, SpriteEffects.None, 1);
+                            _spriteBatch.Draw(ampm[row][0], new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
                     }
 
                     string time = dateTime.ToString("hhmm");
@@ -311,7 +319,7 @@ namespace TimeCircuits
                         for (int num = 0; num < 2; num++)
                         {
                             int pos = (int)Char.GetNumericValue(time[num]);
-                            _spriteBatch.Draw(numbers[row][pos], GetHourPos(row, num), null, Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 1);
+                            _spriteBatch.Draw(numbers[row][pos], GetHourPos(row, num), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
                         }
                     }
 
@@ -320,14 +328,14 @@ namespace TimeCircuits
                         for (int num = 0; num < 2; num++)
                         {
                             int pos = (int)Char.GetNumericValue(time[num + 2]);
-                            _spriteBatch.Draw(numbers[row][pos], GetMinutePos(row, num), null, Color.White, 0, Vector2.Zero, scale, SpriteEffects.None, 1);
+                            _spriteBatch.Draw(numbers[row][pos], GetMinutePos(row, num), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
                         }
                     }
 
                 }
 
                 if (IsTickVisible)
-                    _spriteBatch.Draw(tick, new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, backgroundScale, SpriteEffects.None, 1);
+                    _spriteBatch.Draw(tick, new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             }
 
             _spriteBatch.End();
@@ -335,30 +343,33 @@ namespace TimeCircuits
             base.Draw(gameTime);
         }
 
+        public Vector2 GetRowOffset(int row)
+        {
+            switch (row)
+            {
+                case 0:
+                    return new Vector2(0, 82 + speedo.Height * speedoScale);
+                case 1:
+                    return new Vector2(0, 291) + GetRowOffset(0);
+                default:
+                    return new Vector2(0, 585) + GetRowOffset(0);
+            }
+        }
+
         private Vector2 GetSpeedoPos(int num)
         {
             switch (num)
             {
                 case 0:
-                    return new Vector2(279 * speedoScale - speedoNumbers[0].Width / 2 * speedoScale, 151 * speedoScale - speedoNumbers[0].Height / 2 * speedoScale);
+                    return new Vector2(199 * speedoScale, 41 * speedoScale);
                 default:
-                    Vector2 ret = GetSpeedoPos(num - 1);
-                    ret.X += 200 * speedoScale;
-                    return ret;
+                    return new Vector2(392 * speedoScale, 41 * speedoScale);
             }
         }
 
         private Vector2 GetMonthPos(int row)
         {
-            switch (row)
-            {
-                case 0:
-                    return new Vector2(192 * backgroundScale - months[0][0].Width / 2 * scale, 144 * backgroundScale - months[0][0].Height / 2 * scale + speedo.Height * speedoScale);
-                case 1:
-                    return new Vector2(192 * backgroundScale - months[0][0].Width / 2 * scale, 435 * backgroundScale - months[0][0].Height / 2 * scale + speedo.Height * speedoScale);
-                default:
-                    return new Vector2(192 * backgroundScale - months[0][0].Width / 2 * scale, 728 * backgroundScale - months[0][0].Height / 2 * scale + speedo.Height * speedoScale);
-            }
+            return new Vector2(76, 0) + GetRowOffset(row);
         }
 
         private Vector2 GetDayPos(int row, int num)
@@ -366,11 +377,9 @@ namespace TimeCircuits
             switch (num)
             {
                 case 0:
-                    return new Vector2(422 * backgroundScale - numbers[0][0].Width / 2 * scale, GetMonthPos(row).Y + 4 * backgroundScale);
+                    return new Vector2(377, 2) + GetRowOffset(row);
                 default:
-                    Vector2 ret = GetDayPos(row, num - 1);
-                    ret.X += 78 * backgroundScale;
-                    return ret;
+                    return new Vector2(78, 0) + GetDayPos(row, num - 1);
             }
         }
 
@@ -379,11 +388,9 @@ namespace TimeCircuits
             switch (num)
             {
                 case 0:
-                    return new Vector2(658 * backgroundScale - numbers[0][0].Width / 2 * scale, GetMonthPos(row).Y + 4 * backgroundScale);
+                    return new Vector2(612, 2) + GetRowOffset(row);
                 default:
-                    Vector2 ret = GetYearPos(row, num - 1);
-                    ret.X += 78 * backgroundScale;                    
-                    return ret;
+                    return new Vector2(78, 0) + GetYearPos(row, num - 1);
             }
         }
 
@@ -392,11 +399,9 @@ namespace TimeCircuits
             switch (num)
             {
                 case 0:
-                    return new Vector2(1086 * backgroundScale - numbers[0][0].Width / 2 * scale, GetMonthPos(row).Y + 4 * backgroundScale);
+                    return new Vector2(1040, 2) + GetRowOffset(row);
                 default:
-                    Vector2 ret = GetHourPos(row, num - 1);
-                    ret.X += 78 * backgroundScale;
-                    return ret;
+                    return new Vector2(78, 0) + GetHourPos(row, num - 1);
             }
         }
 
@@ -405,11 +410,9 @@ namespace TimeCircuits
             switch (num)
             {
                 case 0:
-                    return new Vector2(1325 * backgroundScale - numbers[0][0].Width / 2 * scale, GetMonthPos(row).Y + 4 * backgroundScale);
+                    return new Vector2(1277, 2) + GetRowOffset(row);
                 default:
-                    Vector2 ret = GetMinutePos(row, num - 1);
-                    ret.X += 78 * backgroundScale;
-                    return ret;
+                    return new Vector2(78, 0) + GetMinutePos(row, num - 1);
             }
         }
     }
