@@ -14,7 +14,7 @@ namespace TimeCircuits.Android
         Label = "@string/app_name",
         MainLauncher = true,
         Icon = "@drawable/icon",
-        AlwaysRetainTaskState = true,
+        AlwaysRetainTaskState = false,
         LaunchMode = LaunchMode.SingleInstance,
         ScreenOrientation = ScreenOrientation.SensorLandscape,
         ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.Keyboard | ConfigChanges.KeyboardHidden
@@ -40,7 +40,7 @@ namespace TimeCircuits.Android
 
             _display.Run();
 
-            Core.Network.StartListening(_display);
+            Core.Network.Start(_display);
         }
     }
 }

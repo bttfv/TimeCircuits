@@ -66,13 +66,23 @@ namespace TimeCircuits.Core
                 _display.SetVisible(split[0], bool.Parse(split[1]), bool.Parse(split[2]), bool.Parse(split[3]), bool.Parse(split[4]), bool.Parse(split[5]), bool.Parse(split[6]), bool.Parse(split[7]));
             }
 
-            StartListening(_display);
+            Start(_display);
         }
 
-        public static void StartListening(Display display)
+        public static void Start(Display display)
         {
             _display = display;
+
+            if (udp == null)
+                udp = new UdpClient(1985);
+
             udp.BeginReceive(Receive, new object());
+        }
+
+        public static void Stop()
+        {
+            udp.Dispose();
+            udp = null;
         }
     }
 }

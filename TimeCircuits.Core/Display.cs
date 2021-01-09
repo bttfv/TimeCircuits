@@ -12,6 +12,13 @@ namespace TimeCircuits
         On
     }
 
+    internal enum GameRunState
+    {
+        Stopped,
+        Running,
+        Exiting
+    }
+
     public class Display : Game
     {
         private GraphicsDeviceManager _graphics;
@@ -42,6 +49,8 @@ namespace TimeCircuits
         private DateTime[] dates = new DateTime[3];
 
         private float speedoScale = 0.7f;
+
+        private GameRunState GameRunState = GameRunState.Running;
 
         public bool IsHUDVisible { get; set; } = false;
         public bool IsTickVisible { get; set; } = false;
@@ -124,12 +133,24 @@ namespace TimeCircuits
             _graphics.ApplyChanges();
         }
 
+        protected override void OnActivated(object sender, EventArgs args)
+        {
+            GameRunState = GameRunState.Running;
+
+            base.OnActivated(sender, args);
+        }
+
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
             // TODO: Add your update logic here
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
+                if (GameRunState != GameRunState.Exiting) 
+                {
+                    GameRunState = GameRunState.Exiting;
+                    Exit();
+                }
+            }                           
 
             base.Update(gameTime);
         }
@@ -343,7 +364,7 @@ namespace TimeCircuits
             base.Draw(gameTime);
         }
 
-        #region "Position routines"
+#region "Position routines"
         public Vector2 GetRowOffset(int row)
         {
             switch (row)
@@ -416,6 +437,6 @@ namespace TimeCircuits
                     return new Vector2(78, 0) + GetMinutePos(row, num - 1);
             }
         }
-        #endregion
+#endregion
     }
 }
