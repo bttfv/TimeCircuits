@@ -8,9 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: global::Android.Runtime.ResourceDesignerAttribute("TimeCircuits.Android.Resource", IsApplication=true)]
+[assembly: global::Android.Runtime.ResourceDesignerAttribute("BackToTheFutureV.HUD.Android.Resource", IsApplication=true)]
 
-namespace TimeCircuits.Android
+namespace BackToTheFutureV.HUD.Android
 {
 	
 	

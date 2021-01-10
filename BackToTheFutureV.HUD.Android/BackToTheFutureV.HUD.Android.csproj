@@ -9,8 +9,8 @@
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TimeCircuits.Android</RootNamespace>
-    <AssemblyName>BackToTheFutureV.HUD</AssemblyName>
+    <RootNamespace>BackToTheFutureV.HUD.Android</RootNamespace>
+    <AssemblyName>BackToTheFutureV.HUD.Android</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <AndroidApplication>true</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
@@ -70,7 +70,7 @@
     <AndroidResource Include="Resources\Values\Strings.xml" />
   </ItemGroup>
   <ItemGroup>
-    <MonoGameContentReference Include="..\TimeCircuits.Core\Content\Content.mgcb">
+    <MonoGameContentReference Include="..\BackToTheFutureV.HUD.Core\Content\Content.mgcb">
       <Link>Content\Content.mgcb</Link>
     </MonoGameContentReference>
   </ItemGroup>
@@ -82,9 +82,9 @@
     <PackageReference Include="MonoGame.Framework.Android" Version="3.8.0.1641" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TimeCircuits.Core\TimeCircuits.Core.csproj">
+    <ProjectReference Include="..\BackToTheFutureV.HUD.Core\BackToTheFutureV.HUD.Core.csproj">
       <Project>{0e906d6f-bbbd-4a5e-9ac9-8e98682258a6}</Project>
-      <Name>TimeCircuits.Core</Name>
+      <Name>BackToTheFutureV.HUD.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
