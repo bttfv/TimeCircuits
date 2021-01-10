@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TimeCircuits.Desktop
+﻿namespace TimeCircuits.Desktop
 {
     public static class Program
     {

@@ -3,10 +3,6 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Views;
 using Microsoft.Xna.Framework;
-using System.Net.Sockets;
-using System.Net;
-using System.Text;
-using System;
 
 namespace TimeCircuits.Android
 {
