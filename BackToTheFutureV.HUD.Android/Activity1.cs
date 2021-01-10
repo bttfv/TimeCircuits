@@ -3,6 +3,7 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Views;
 using Microsoft.Xna.Framework;
+using System;
 
 namespace TimeCircuits.Android
 {
@@ -35,6 +36,17 @@ namespace TimeCircuits.Android
             _view.SystemUiVisibility = (StatusBarVisibility)SystemUiFlags.HideNavigation | (StatusBarVisibility)SystemUiFlags.Immersive | (StatusBarVisibility)SystemUiFlags.Fullscreen;
 
             _display.Run();
+
+#if DEBUG
+            _display.IsHUDVisible = true;
+            _display.IsTickVisible = true;
+            _display.Empty = EmptyType.Off;
+            _display.Speed = 88;
+
+            _display.SetDate("red", DateTime.Now);
+            _display.SetDate("green", DateTime.Now);
+            _display.SetDate("yellow", DateTime.Now);
+#endif
 
             Core.Network.Start(_display);
         }
