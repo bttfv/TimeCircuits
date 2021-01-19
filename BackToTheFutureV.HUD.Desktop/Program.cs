@@ -20,7 +20,7 @@ namespace TimeCircuits.Desktop
                 game.SetDate("green", DateTime.Now);
                 game.SetDate("yellow", DateTime.Now);
 #endif
-                
+
                 Core.Network.Start(game);
 
                 game.Run();

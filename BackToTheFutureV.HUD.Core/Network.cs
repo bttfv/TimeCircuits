@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -15,7 +16,9 @@ namespace TimeCircuits.Core
         {
             IPEndPoint ip = new IPEndPoint(IPAddress.Any, 1985);
 
-            string message = Encoding.ASCII.GetString(udp.EndReceive(ar, ref ip));
+            byte[] ret = udp.EndReceive(ar, ref ip);
+
+            string message = Encoding.ASCII.GetString(ret);
 
             if (message.StartsWith("Speed="))
             {
@@ -64,6 +67,18 @@ namespace TimeCircuits.Core
                 string[] split = message.Split('|');
 
                 _display.SetVisible(split[0], bool.Parse(split[1]), bool.Parse(split[2]), bool.Parse(split[3]), bool.Parse(split[4]), bool.Parse(split[5]), bool.Parse(split[6]), bool.Parse(split[7]));
+            }
+
+            if (message.StartsWith("SetLedState="))
+            {
+                int pos = "SetLedState=".Count();
+
+                for (int column = 0; column < 10; column++)
+                    for (int row = 0; row < 20; row++)
+                    {
+                        _display.ledState[column][row] = Convert.ToBoolean(ret[pos]);
+                        pos++;
+                    }                        
             }
 
             Start(_display);

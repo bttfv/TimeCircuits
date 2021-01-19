@@ -42,6 +42,14 @@ namespace TimeCircuits
 
         private Texture2D[] speedoNumbers = new Texture2D[10];
 
+        internal bool[][] ledState;
+
+        private Texture2D sidBackground;
+
+        private Texture2D sidLedGreen;
+        private Texture2D sidLedRed;
+        private Texture2D sidLedYellow;
+
         private Texture2D[][] numbers;
         private Texture2D[][] months;
         private Texture2D[][] ampm;
@@ -96,6 +104,11 @@ namespace TimeCircuits
             months = new Texture2D[3][];
             ampm = new Texture2D[3][];
 
+            ledState = new bool[10][];
+
+            for (int column = 0; column < 10; column++)
+                ledState[column] = new bool[20];
+
             for (int row = 0; row < 3; row++)
             {
                 string color;
@@ -127,8 +140,13 @@ namespace TimeCircuits
                 ampm[row][1] = Content.Load<Texture2D>($"TimeCircuits/{color}/pm");
             }
 
+            sidBackground = Content.Load<Texture2D>("Backgrounds/sid_background");
+            sidLedGreen = Content.Load<Texture2D>("SID/sid_led_green");
+            sidLedRed = Content.Load<Texture2D>("SID/sid_led_red");
+            sidLedYellow = Content.Load<Texture2D>("SID/sid_led_yellow");
+
             //_graphics.ToggleFullScreen();
-            _graphics.PreferredBackBufferWidth = background.Width / 2;
+            _graphics.PreferredBackBufferWidth = (background.Width + sidBackground.Width) / 2;
             _graphics.PreferredBackBufferHeight = (int)((background.Height + speedo.Height * speedoScale) / 2);
             _graphics.ApplyChanges();
         }
@@ -238,11 +256,20 @@ namespace TimeCircuits
 
             for (int row = 0; row < 3; row++)
                 dates[row] = default;
+
+            for (int column = 0; column < 10; column++)
+                for (int row = 0; row < 20; row++)
+                    ledState[column][row] = false;
+        }
+
+        public void SetLedState(bool[][] _ledState)
+        {
+            ledState = _ledState;
         }
 
         private Matrix CurrentScale()
         {
-            var gameWorldSize = new Vector2(background.Width, background.Height + speedo.Height * speedoScale);
+            var gameWorldSize = new Vector2(background.Width + sidBackground.Width, background.Height + speedo.Height * speedoScale);
             var vp = GraphicsDevice.Viewport;
 
             float scaleX = vp.Width / gameWorldSize.X;
@@ -260,9 +287,7 @@ namespace TimeCircuits
             GraphicsDevice.Clear(Color.Transparent);
 
             // TODO: Add your drawing code here
-            _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, CurrentScale());
-
-            _spriteBatch.Draw(logo, Vector2.Zero, null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+            _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, CurrentScale());            
 
             if (IsHUDVisible)
             {                
@@ -357,7 +382,16 @@ namespace TimeCircuits
 
                 if (IsTickVisible)
                     _spriteBatch.Draw(tick, new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            }
+
+                _spriteBatch.Draw(sidBackground, new Vector2(background.Width, 0), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+
+                for (int column = 0; column < 10; column++)
+                    for(int row = 0; row < 20; row++)
+                        if (ledState[column][row])
+                            _spriteBatch.Draw(GetLedColor(row), GetLedOffset(column, row), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+            } 
+            else
+                _spriteBatch.Draw(logo, new Vector2((sidBackground.Width + background.Width - logo.Width) / 2, (background.Height + speedo.Height * speedoScale - logo.Height) / 2), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
 
             _spriteBatch.End();
 
@@ -365,6 +399,27 @@ namespace TimeCircuits
         }
 
 #region "Position routines"
+
+        public Vector2 GetLedOffset(int column, int row)
+        {
+            Vector2 origin = new Vector2(background.Width + 152, 972);
+
+            if (column == 0 && row == 0)
+                return origin;
+
+            return origin + new Vector2(column * 49.6f , - row * 49.3f);
+        }
+
+        public Texture2D GetLedColor(int row)
+        {
+            if (row < 13)
+                return sidLedGreen;
+            else if (row < 19)
+                return sidLedYellow;
+
+            return sidLedRed;
+        }
+
         public Vector2 GetRowOffset(int row)
         {
             switch (row)
