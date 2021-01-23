@@ -17,17 +17,17 @@ namespace TimeCircuits.Android
         ScreenOrientation = ScreenOrientation.SensorLandscape,
         ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.Keyboard | ConfigChanges.KeyboardHidden
     )]
-    public class Activity1 : AndroidGameActivity
+    public class Program : AndroidGameActivity
     {
-        private BackToTheFutureV.HUD.Core.HUDDisplay _display;
+        private HUDDisplay game;
         private View _view;
 
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
 
-            _display = new BackToTheFutureV.HUD.Core.HUDDisplay();
-            _view = _display.Services.GetService(typeof(View)) as View;
+            game = new HUDDisplay();
+            _view = game.Services.GetService(typeof(View)) as View;
 
             SetContentView(_view);
 
@@ -36,20 +36,26 @@ namespace TimeCircuits.Android
 
             _view.SystemUiVisibility = (StatusBarVisibility)SystemUiFlags.HideNavigation | (StatusBarVisibility)SystemUiFlags.Immersive | (StatusBarVisibility)SystemUiFlags.Fullscreen;
 
-            _display.Run();
+            game.Graphics.IsFullScreen = true;
+
+            game.Run();
 
 #if DEBUG
-            _display.Properties.IsHUDVisible = true;
-            _display.Properties.IsTickVisible = true;
-            _display.Properties.Empty = EmptyType.Off;
-            _display.Properties.Speed = 88;
+            game.Properties.IsHUDVisible = true;
+            game.Properties.IsTickVisible = true;
+            game.Properties.Empty = EmptyType.Off;
+            game.Properties.Speed = 88;
 
-            _display.Properties.SetDate("red", DateTime.Now);
-            _display.Properties.SetDate("green", DateTime.Now);
-            _display.Properties.SetDate("yellow", DateTime.Now);
+            game.Properties.SetDate("red", DateTime.Now);
+            game.Properties.SetDate("green", DateTime.Now);
+            game.Properties.SetDate("yellow", DateTime.Now);
+
+            for (int column = 0; column < 10; column++)
+                for (int row = 0; row < 20; row++)
+                    game.Properties.LedState[column][row] = true;
 #endif
 
-            HUDNetwork.Start(_display);
+            HUDNetwork.Start(game);
         }
     }
 }

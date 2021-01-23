@@ -7,11 +7,22 @@ namespace BackToTheFutureV.HUD.Core
 {    
     public class HUDDisplay : Game
     {
-        public HUDProperties Properties = new HUDProperties();
+        private DateTime _lastUpdate;
+        private HUDProperties _properties = new HUDProperties();
+        public HUDProperties Properties
+        {
+            get => _properties;
+            set
+            {
+                _properties = value;
+                _lastUpdate = DateTime.Now;
+            }
+        }
 
-        private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
+        public GraphicsDeviceManager Graphics { get; }
+        private SpriteBatch SpriteBatch;
 
+        private Texture2D MetalBackground;
         private Texture2D BTTFVLogo;
 
         private Texture2D TCD;
@@ -21,7 +32,7 @@ namespace BackToTheFutureV.HUD.Core
         private Texture2D EmptyLed;
         private Texture2D EmptyLedGlow;
 
-        private Texture2D[] speedoNumbers = new Texture2D[10];
+        private Texture2D[] SpeedoNumber = new Texture2D[10];
 
         private Texture2D SID;
 
@@ -29,15 +40,21 @@ namespace BackToTheFutureV.HUD.Core
         private Texture2D SIDLedRed;
         private Texture2D SIDLedYellow;
 
-        private Texture2D[][] numbers;
-        private Texture2D[][] months;
-        private Texture2D[][] ampm;
+        private Texture2D[][] TCDNumber;
+        private Texture2D[][] TCDMonth;
+        private Texture2D[][] TCDAmPm;
 
-        private float speedoScale = 0.7f;
+        private const float SpeedometerScale = 0.7f;
+        private const float TCDElementScale = 0.9f;
+        private const float EmptyLedScale = 1.5f;
+        private Vector2 EmptyPosition;
+
+        private float SpeedometerY => SID.Height - TCD.Height - Speedometer.Height * SpeedometerScale;
+        private float TCDY => SID.Height - TCD.Height;
 
         public HUDDisplay()
         {
-            _graphics = new GraphicsDeviceManager(this);
+            Graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
         }
@@ -55,8 +72,9 @@ namespace BackToTheFutureV.HUD.Core
         {
             // TODO: use this.Content to load your game content here
 
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            SpriteBatch = new SpriteBatch(GraphicsDevice);
 
+            MetalBackground = Content.Load<Texture2D>("Backgrounds/metal_background");
             BTTFVLogo = Content.Load<Texture2D>("Backgrounds/BTTFV");
 
             TCD = Content.Load<Texture2D>("Backgrounds/tcd");
@@ -68,11 +86,11 @@ namespace BackToTheFutureV.HUD.Core
             Speedometer = Content.Load<Texture2D>("Backgrounds/speedo");
 
             for (int num = 0; num < 10; num++)
-                speedoNumbers[num] = Content.Load<Texture2D>($"Speedo/{num}");
+                SpeedoNumber[num] = Content.Load<Texture2D>($"Speedo/{num}");
 
-            numbers = new Texture2D[3][];
-            months = new Texture2D[3][];
-            ampm = new Texture2D[3][];
+            TCDNumber = new Texture2D[3][];
+            TCDMonth = new Texture2D[3][];
+            TCDAmPm = new Texture2D[3][];
 
             for (int row = 0; row < 3; row++)
             {
@@ -91,18 +109,18 @@ namespace BackToTheFutureV.HUD.Core
                         break;
                 }
 
-                numbers[row] = new Texture2D[10];
-                months[row] = new Texture2D[12];
-                ampm[row] = new Texture2D[2];
+                TCDNumber[row] = new Texture2D[10];
+                TCDMonth[row] = new Texture2D[12];
+                TCDAmPm[row] = new Texture2D[2];
 
                 for (int num = 0; num < 10; num++)
-                    numbers[row][num] = Content.Load<Texture2D>($"TimeCircuits/{color}/{num}");
+                    TCDNumber[row][num] = Content.Load<Texture2D>($"TimeCircuits/{color}/{num}");
 
                 for (int num = 1; num < 13; num++)
-                    months[row][num - 1] = Content.Load<Texture2D>($"TimeCircuits/{color}/Months/{num}");
+                    TCDMonth[row][num - 1] = Content.Load<Texture2D>($"TimeCircuits/{color}/Months/{num}");
 
-                ampm[row][0] = Content.Load<Texture2D>($"TimeCircuits/{color}/am");
-                ampm[row][1] = Content.Load<Texture2D>($"TimeCircuits/{color}/pm");
+                TCDAmPm[row][0] = Content.Load<Texture2D>($"TimeCircuits/{color}/am");
+                TCDAmPm[row][1] = Content.Load<Texture2D>($"TimeCircuits/{color}/pm");
             }
 
             SID = Content.Load<Texture2D>("Backgrounds/sid_background");
@@ -110,10 +128,14 @@ namespace BackToTheFutureV.HUD.Core
             SIDLedRed = Content.Load<Texture2D>("SID/sid_led_red");
             SIDLedYellow = Content.Load<Texture2D>("SID/sid_led_yellow");
 
-            //_graphics.ToggleFullScreen();
-            _graphics.PreferredBackBufferWidth = (TCD.Width + SID.Width) / 2;
-            _graphics.PreferredBackBufferHeight = (int)((TCD.Height + Speedometer.Height * speedoScale) / 2);
-            _graphics.ApplyChanges();
+            float emptyX = Speedometer.Width * SpeedometerScale + (TCD.Width - Speedometer.Width * SpeedometerScale - EmptyLed.Width * EmptyLedScale) / 2;
+            float emptyY = SpeedometerY + (Speedometer.Height * SpeedometerScale - EmptyLed.Height * EmptyLedScale) / 2;
+
+            EmptyPosition = new Vector2(emptyX, emptyY);
+
+            Graphics.PreferredBackBufferWidth = (TCD.Width + SID.Width) / 2;
+            Graphics.PreferredBackBufferHeight = SID.Height / 2;
+            Graphics.ApplyChanges();
         }
 
         protected override void OnActivated(object sender, EventArgs args)
@@ -132,7 +154,7 @@ namespace BackToTheFutureV.HUD.Core
 
         private Matrix CurrentScale()
         {
-            var gameWorldSize = new Vector2(TCD.Width + SID.Width, TCD.Height + Speedometer.Height * speedoScale);
+            var gameWorldSize = new Vector2(TCD.Width + SID.Width, SID.Height);
             var vp = GraphicsDevice.Viewport;
 
             float scaleX = vp.Width / gameWorldSize.X;
@@ -147,35 +169,41 @@ namespace BackToTheFutureV.HUD.Core
 
         protected override void Draw(GameTime gameTime)
         {
+
+#if RELEASE
+            if (_lastUpdate < DateTime.Now.AddSeconds(-3))
+            {
+                Properties = new HUDProperties();
+                _lastUpdate = DateTime.Now.AddHours(1);
+            }
+#endif
+
             GraphicsDevice.Clear(Color.Transparent);
 
             // TODO: Add your drawing code here
-            _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, CurrentScale());            
+            SpriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, CurrentScale());            
 
             if (Properties.IsHUDVisible)
-            {                
-                _spriteBatch.Draw(Speedometer, Vector2.Zero, null, Color.White, 0, Vector2.Zero, speedoScale, SpriteEffects.None, 1);
+            {
+                SpriteBatch.Draw(MetalBackground, Vector2.Zero, Color.White);
+
+                SpriteBatch.Draw(Speedometer, new Vector2(0, SpeedometerY), null, Color.White, 0, Vector2.Zero, SpeedometerScale, SpriteEffects.None, 1);
 
                 if (Properties.Speed < 10)
-                    _spriteBatch.Draw(speedoNumbers[Properties.Speed], GetSpeedoPos(1), null, Color.White, 0, Vector2.Zero, speedoScale, SpriteEffects.None, 1);
+                    SpriteBatch.Draw(SpeedoNumber[Properties.Speed], GetSpeedoPos(1), null, Color.White, 0, Vector2.Zero, SpeedometerScale, SpriteEffects.None, 1);
                 else
                 {
                     for (int num = 0; num < 2; num++)
                     {
                         int pos = (int)Char.GetNumericValue(Properties.Speed.ToString()[num]);
-                        _spriteBatch.Draw(speedoNumbers[pos], GetSpeedoPos(num), null, Color.White, 0, Vector2.Zero, speedoScale, SpriteEffects.None, 1);
+                        SpriteBatch.Draw(SpeedoNumber[pos], GetSpeedoPos(num), null, Color.White, 0, Vector2.Zero, SpeedometerScale, SpriteEffects.None, 1);
                     }
                 }
 
                 if (Properties.Empty != EmptyType.Hide)
-                {
-                    float emptyX = Speedometer.Width * speedoScale + (TCD.Width - Speedometer.Width * speedoScale) / 2 - (EmptyLed.Width * 1.5f) / 2;
-                    float emptyY = (Speedometer.Height * speedoScale) / 2 - (EmptyLed.Height * 1.5f) / 2;
+                    SpriteBatch.Draw(Properties.Empty == EmptyType.Off ? EmptyLed : EmptyLedGlow, EmptyPosition, null, Color.White, 0, Vector2.Zero, EmptyLedScale, SpriteEffects.None, 1);
 
-                    _spriteBatch.Draw(Properties.Empty == EmptyType.Off ? EmptyLed : EmptyLedGlow, new Vector2(emptyX, emptyY), null, Color.White, 0, Vector2.Zero, 1.5f, SpriteEffects.None, 1);
-                }
-
-                _spriteBatch.Draw(TCD, new Vector2(0, Speedometer.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                SpriteBatch.Draw(TCD, new Vector2(0, TCDY), Color.White);
 
                 for (int row = 0; row < 3; row++)
                 {
@@ -185,21 +213,21 @@ namespace BackToTheFutureV.HUD.Core
                         break;
 
                     if (Properties.MonthVisible[row])
-                        _spriteBatch.Draw(months[row][dateTime.Month - 1], GetMonthPos(row), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
+                        SpriteBatch.Draw(TCDMonth[row][dateTime.Month - 1], GetMonthPos(row), null, Color.White, 0, Vector2.Zero, TCDElementScale, SpriteEffects.None, 1);
 
                     if (Properties.DayVisible[row])
                     {
                         if (dateTime.Day < 10)
                         {
-                            _spriteBatch.Draw(numbers[row][0], GetDayPos(row, 0), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
-                            _spriteBatch.Draw(numbers[row][dateTime.Day], GetDayPos(row, 1), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
+                            SpriteBatch.Draw(TCDNumber[row][0], GetDayPos(row, 0), null, Color.White, 0, Vector2.Zero, TCDElementScale, SpriteEffects.None, 1);
+                            SpriteBatch.Draw(TCDNumber[row][dateTime.Day], GetDayPos(row, 1), null, Color.White, 0, Vector2.Zero, TCDElementScale, SpriteEffects.None, 1);
                         }
                         else
                         {
                             for (int num = 0; num < 2; num++)
                             {
                                 int pos = (int)Char.GetNumericValue(dateTime.Day.ToString()[num]);
-                                _spriteBatch.Draw(numbers[row][pos], GetDayPos(row, num), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
+                                SpriteBatch.Draw(TCDNumber[row][pos], GetDayPos(row, num), null, Color.White, 0, Vector2.Zero, TCDElementScale, SpriteEffects.None, 1);
                             }
                         }
                     }
@@ -209,16 +237,16 @@ namespace BackToTheFutureV.HUD.Core
                         for (int num = 0; num < 4; num++)
                         {
                             int pos = (int)Char.GetNumericValue(dateTime.Year.ToString()[num]);
-                            _spriteBatch.Draw(numbers[row][pos], GetYearPos(row, num), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
+                            SpriteBatch.Draw(TCDNumber[row][pos], GetYearPos(row, num), null, Color.White, 0, Vector2.Zero, TCDElementScale, SpriteEffects.None, 1);
                         }
                     }
 
                     if (Properties.AmPmVisible[row])
                     {
                         if (dateTime.Hour > 12)
-                            _spriteBatch.Draw(ampm[row][1], new Vector2(0, Speedometer.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                            SpriteBatch.Draw(TCDAmPm[row][1], new Vector2(0, TCDY), Color.White);
                         else
-                            _spriteBatch.Draw(ampm[row][0], new Vector2(0, Speedometer.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                            SpriteBatch.Draw(TCDAmPm[row][0], new Vector2(0, TCDY), Color.White);
                     }
 
                     string time = dateTime.ToString("hhmm");
@@ -228,7 +256,7 @@ namespace BackToTheFutureV.HUD.Core
                         for (int num = 0; num < 2; num++)
                         {
                             int pos = (int)Char.GetNumericValue(time[num]);
-                            _spriteBatch.Draw(numbers[row][pos], GetHourPos(row, num), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
+                            SpriteBatch.Draw(TCDNumber[row][pos], GetHourPos(row, num), null, Color.White, 0, Vector2.Zero, TCDElementScale, SpriteEffects.None, 1);
                         }
                     }
 
@@ -237,26 +265,26 @@ namespace BackToTheFutureV.HUD.Core
                         for (int num = 0; num < 2; num++)
                         {
                             int pos = (int)Char.GetNumericValue(time[num + 2]);
-                            _spriteBatch.Draw(numbers[row][pos], GetMinutePos(row, num), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
+                            SpriteBatch.Draw(TCDNumber[row][pos], GetMinutePos(row, num), null, Color.White, 0, Vector2.Zero, TCDElementScale, SpriteEffects.None, 1);
                         }
                     }
 
                 }
 
                 if (Properties.IsTickVisible)
-                    _spriteBatch.Draw(TCDTick, new Vector2(0, Speedometer.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-
-                _spriteBatch.Draw(SID, new Vector2(TCD.Width, 0), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                    SpriteBatch.Draw(TCDTick, new Vector2(0, TCDY), Color.White);
+                
+                SpriteBatch.Draw(SID, new Vector2(TCD.Width, 0), Color.White);
 
                 for (int column = 0; column < 10; column++)
                     for(int row = 0; row < 20; row++)
                         if (Properties.LedState[column][row])
-                            _spriteBatch.Draw(GetLedColor(row), GetLedOffset(column, row), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                            SpriteBatch.Draw(GetLedColor(row), GetLedOffset(column, row), Color.White);
             } 
             else
-                _spriteBatch.Draw(BTTFVLogo, new Vector2((SID.Width + TCD.Width - BTTFVLogo.Width) / 2, (TCD.Height + Speedometer.Height * speedoScale - BTTFVLogo.Height) / 2), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                SpriteBatch.Draw(BTTFVLogo, new Vector2((SID.Width + TCD.Width - BTTFVLogo.Width) / 2, (SID.Height - BTTFVLogo.Height) / 2), Color.White);
 
-            _spriteBatch.End();
+            SpriteBatch.End();
 
             base.Draw(gameTime);
         }
@@ -288,7 +316,7 @@ namespace BackToTheFutureV.HUD.Core
             switch (row)
             {
                 case 0:
-                    return new Vector2(0, 82 + Speedometer.Height * speedoScale);
+                    return new Vector2(0, 85 + TCDY);
                 case 1:
                     return new Vector2(0, 291) + GetRowOffset(0);
                 default:
@@ -301,9 +329,9 @@ namespace BackToTheFutureV.HUD.Core
             switch (num)
             {
                 case 0:
-                    return new Vector2(199 * speedoScale, 41 * speedoScale);
+                    return new Vector2(199 * SpeedometerScale, 41 * SpeedometerScale + SpeedometerY);
                 default:
-                    return new Vector2(392 * speedoScale, 41 * speedoScale);
+                    return new Vector2(392 * SpeedometerScale, 41 * SpeedometerScale + SpeedometerY);
             }
         }
 

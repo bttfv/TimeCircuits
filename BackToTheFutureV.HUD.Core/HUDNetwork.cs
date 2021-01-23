@@ -22,7 +22,7 @@ namespace BackToTheFutureV.HUD.Core
 
             if (properties != null)
                 _display.Properties = properties;
-            
+
             Start(_display);
         }
 
