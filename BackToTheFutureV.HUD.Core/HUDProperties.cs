@@ -1,17 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace BackToTheFutureV.HUD.Core
 {
+    public enum EmptyType
+    {
+        Hide,
+        Off,
+        On
+    }
+
     [Serializable]
     public class HUDProperties
     {
-        public bool[][] LedState;
+        private static BinaryFormatter formatter = new BinaryFormatter();
 
-        public int[] CurrentHeight = new int[10];
-        public int[] NewHeight = new int[10];
-        public int[] LedDelay = new int[10];
+        public bool[][] LedState;
 
         public DateTime[] Date = new DateTime[3];
 
@@ -111,23 +116,28 @@ namespace BackToTheFutureV.HUD.Core
             }
         }
 
-        public void SetOff()
+        public static HUDProperties FromData(byte[] data)
         {
-            IsHUDVisible = false;
-            IsTickVisible = false;
-            Empty = EmptyType.Hide;
-
-            for (int row = 0; row < 3; row++)
-                Date[row] = default;
-
-            for (int column = 0; column < 10; column++)
-                for (int row = 0; row < 20; row++)
-                    LedState[column][row] = false;
+            using (var stream = new MemoryStream(data))
+            {
+                try
+                {
+                    return (HUDProperties)formatter.Deserialize(stream);
+                }
+                catch
+                {
+                    return null;
+                }
+            }
         }
 
-        public void SetLedState(bool[][] _ledState)
+        public static implicit operator byte[](HUDProperties command)
         {
-            LedState = _ledState;
+            using (var stream = new MemoryStream())
+            {
+                formatter.Serialize(stream, command);
+                return stream.ToArray();
+            }
         }
     }
 }

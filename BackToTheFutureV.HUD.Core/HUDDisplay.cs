@@ -4,21 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 
 namespace BackToTheFutureV.HUD.Core
-{
-    public enum EmptyType
-    {
-        Hide,
-        Off,
-        On
-    }
-
-    internal enum GameRunState
-    {
-        Stopped,
-        Running,
-        Exiting
-    }
-
+{    
     public class HUDDisplay : Game
     {
         public HUDProperties Properties = new HUDProperties();
@@ -48,8 +34,6 @@ namespace BackToTheFutureV.HUD.Core
         private Texture2D[][] ampm;
 
         private float speedoScale = 0.7f;
-
-        private GameRunState GameRunState = GameRunState.Running;
 
         public HUDDisplay()
         {
@@ -134,8 +118,6 @@ namespace BackToTheFutureV.HUD.Core
 
         protected override void OnActivated(object sender, EventArgs args)
         {
-            GameRunState = GameRunState.Running;
-
             base.OnActivated(sender, args);
         }
 
@@ -143,30 +125,9 @@ namespace BackToTheFutureV.HUD.Core
         {
             // TODO: Add your update logic here
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            {
-                if (GameRunState != GameRunState.Exiting) 
-                {
-                    GameRunState = GameRunState.Exiting;
-                    Exit();
-                }
-            }                           
+                Environment.Exit(0);
 
             base.Update(gameTime);
-        }
-
-        private int RowNameToInt(string name)
-        {
-            name = name.ToLower();
-
-            switch (name)
-            {
-                case "red":
-                    return 0;
-                case "green":
-                    return 1;
-                default:
-                    return 2;
-            }
         }
 
         private Matrix CurrentScale()

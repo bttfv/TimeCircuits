@@ -18,19 +18,10 @@ namespace BackToTheFutureV.HUD.Core
 
             byte[] ret = udp.EndReceive(ar, ref ip);
 
-            HUDCommand command = HUDCommand.FromData(ret);
+            HUDProperties properties = HUDProperties.FromData(ret);
 
-            if (command != null)
-            {
-                switch (command.Verb)
-                {
-                    case "HUDProperties":
-
-                        _display.Properties = command.Get<HUDProperties>();
-
-                        break;
-                }
-            }
+            if (properties != null)
+                _display.Properties = properties;
             
             Start(_display);
         }
