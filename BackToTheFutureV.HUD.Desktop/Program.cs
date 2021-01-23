@@ -1,4 +1,5 @@
 ﻿using System;
+using BackToTheFutureV.HUD.Core;
 
 namespace TimeCircuits.Desktop
 {
@@ -7,21 +8,21 @@ namespace TimeCircuits.Desktop
         [STAThread]
         static void Main()
         {
-            using (var game = new Display())
+            using (var game = new HUDDisplay())
             {
 
 #if DEBUG
-                game.IsHUDVisible = true;
-                game.IsTickVisible = true;
-                game.Empty = EmptyType.Off;
-                game.Speed = 88;
+                //game.Properties.IsHUDVisible = true;
+                //game.Properties.IsTickVisible = true;
+                //game.Properties.Empty = EmptyType.Off;
+                //game.Properties.Speed = 88;
 
-                game.SetDate("red", DateTime.Now);
-                game.SetDate("green", DateTime.Now);
-                game.SetDate("yellow", DateTime.Now);
+                //game.Properties.SetDate("red", DateTime.Now);
+                //game.Properties.SetDate("green", DateTime.Now);
+                //game.Properties.SetDate("yellow", DateTime.Now);
 #endif
 
-                Core.Network.Start(game);
+                HUDNetwork.Start(game);
 
                 game.Run();
               }                

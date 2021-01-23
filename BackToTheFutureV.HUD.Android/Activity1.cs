@@ -4,6 +4,7 @@ using Android.OS;
 using Android.Views;
 using Microsoft.Xna.Framework;
 using System;
+using BackToTheFutureV.HUD.Core;
 
 namespace TimeCircuits.Android
 {
@@ -18,14 +19,14 @@ namespace TimeCircuits.Android
     )]
     public class Activity1 : AndroidGameActivity
     {
-        private Display _display;
+        private BackToTheFutureV.HUD.Core.HUDDisplay _display;
         private View _view;
 
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
 
-            _display = new Display();
+            _display = new BackToTheFutureV.HUD.Core.HUDDisplay();
             _view = _display.Services.GetService(typeof(View)) as View;
 
             SetContentView(_view);
@@ -38,17 +39,17 @@ namespace TimeCircuits.Android
             _display.Run();
 
 #if DEBUG
-            _display.IsHUDVisible = true;
-            _display.IsTickVisible = true;
-            _display.Empty = EmptyType.Off;
-            _display.Speed = 88;
+            _display.Properties.IsHUDVisible = true;
+            _display.Properties.IsTickVisible = true;
+            _display.Properties.Empty = EmptyType.Off;
+            _display.Properties.Speed = 88;
 
-            _display.SetDate("red", DateTime.Now);
-            _display.SetDate("green", DateTime.Now);
-            _display.SetDate("yellow", DateTime.Now);
+            _display.Properties.SetDate("red", DateTime.Now);
+            _display.Properties.SetDate("green", DateTime.Now);
+            _display.Properties.SetDate("yellow", DateTime.Now);
 #endif
 
-            Core.Network.Start(_display);
+            HUDNetwork.Start(_display);
         }
     }
 }

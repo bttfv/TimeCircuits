@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 
-namespace TimeCircuits
+namespace BackToTheFutureV.HUD.Core
 {
     public enum EmptyType
     {
@@ -19,53 +19,39 @@ namespace TimeCircuits
         Exiting
     }
 
-    public class Display : Game
+    public class HUDDisplay : Game
     {
+        public HUDProperties Properties = new HUDProperties();
+
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        private Texture2D logo;
+        private Texture2D BTTFVLogo;
 
-        private Texture2D background;
-        private Texture2D speedo;
-        private Texture2D tick;
+        private Texture2D TCD;
+        private Texture2D Speedometer;
+        private Texture2D TCDTick;
 
-        private Texture2D empty;
-        private Texture2D emptyGlow;
-
-        private bool[] monthVisible = new bool[3];
-        private bool[] dayVisible = new bool[3];
-        private bool[] yearVisible = new bool[3];
-        private bool[] hourVisible = new bool[3];
-        private bool[] minuteVisible = new bool[3];
-        private bool[] ampmVisible = new bool[3];
+        private Texture2D EmptyLed;
+        private Texture2D EmptyLedGlow;
 
         private Texture2D[] speedoNumbers = new Texture2D[10];
 
-        internal bool[][] ledState;
+        private Texture2D SID;
 
-        private Texture2D sidBackground;
-
-        private Texture2D sidLedGreen;
-        private Texture2D sidLedRed;
-        private Texture2D sidLedYellow;
+        private Texture2D SIDLedGreen;
+        private Texture2D SIDLedRed;
+        private Texture2D SIDLedYellow;
 
         private Texture2D[][] numbers;
         private Texture2D[][] months;
         private Texture2D[][] ampm;
 
-        private DateTime[] dates = new DateTime[3];
-
         private float speedoScale = 0.7f;
 
         private GameRunState GameRunState = GameRunState.Running;
 
-        public bool IsHUDVisible { get; set; } = false;
-        public bool IsTickVisible { get; set; } = false;
-        public EmptyType Empty { get; set; } = EmptyType.Hide;
-        public int Speed { get; set; } = 0;
-
-        public Display()
+        public HUDDisplay()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -87,15 +73,15 @@ namespace TimeCircuits
 
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            logo = Content.Load<Texture2D>("Backgrounds/BTTFV");
+            BTTFVLogo = Content.Load<Texture2D>("Backgrounds/BTTFV");
 
-            background = Content.Load<Texture2D>("Backgrounds/tcd");
-            tick = Content.Load<Texture2D>("Backgrounds/tcd_tick");
+            TCD = Content.Load<Texture2D>("Backgrounds/tcd");
+            TCDTick = Content.Load<Texture2D>("Backgrounds/tcd_tick");
 
-            empty = Content.Load<Texture2D>("Empty/empty_off");
-            emptyGlow = Content.Load<Texture2D>("Empty/empty_glow");
+            EmptyLed = Content.Load<Texture2D>("Empty/empty_off");
+            EmptyLedGlow = Content.Load<Texture2D>("Empty/empty_glow");
 
-            speedo = Content.Load<Texture2D>("Backgrounds/speedo");
+            Speedometer = Content.Load<Texture2D>("Backgrounds/speedo");
 
             for (int num = 0; num < 10; num++)
                 speedoNumbers[num] = Content.Load<Texture2D>($"Speedo/{num}");
@@ -103,11 +89,6 @@ namespace TimeCircuits
             numbers = new Texture2D[3][];
             months = new Texture2D[3][];
             ampm = new Texture2D[3][];
-
-            ledState = new bool[10][];
-
-            for (int column = 0; column < 10; column++)
-                ledState[column] = new bool[20];
 
             for (int row = 0; row < 3; row++)
             {
@@ -140,14 +121,14 @@ namespace TimeCircuits
                 ampm[row][1] = Content.Load<Texture2D>($"TimeCircuits/{color}/pm");
             }
 
-            sidBackground = Content.Load<Texture2D>("Backgrounds/sid_background");
-            sidLedGreen = Content.Load<Texture2D>("SID/sid_led_green");
-            sidLedRed = Content.Load<Texture2D>("SID/sid_led_red");
-            sidLedYellow = Content.Load<Texture2D>("SID/sid_led_yellow");
+            SID = Content.Load<Texture2D>("Backgrounds/sid_background");
+            SIDLedGreen = Content.Load<Texture2D>("SID/sid_led_green");
+            SIDLedRed = Content.Load<Texture2D>("SID/sid_led_red");
+            SIDLedYellow = Content.Load<Texture2D>("SID/sid_led_yellow");
 
             //_graphics.ToggleFullScreen();
-            _graphics.PreferredBackBufferWidth = (background.Width + sidBackground.Width) / 2;
-            _graphics.PreferredBackBufferHeight = (int)((background.Height + speedo.Height * speedoScale) / 2);
+            _graphics.PreferredBackBufferWidth = (TCD.Width + SID.Width) / 2;
+            _graphics.PreferredBackBufferHeight = (int)((TCD.Height + Speedometer.Height * speedoScale) / 2);
             _graphics.ApplyChanges();
         }
 
@@ -188,88 +169,9 @@ namespace TimeCircuits
             }
         }
 
-        public void SetDate(string type, DateTime date)
-        {
-            int row = RowNameToInt(type);
-
-            dates[row] = date;
-
-            monthVisible[row] = true;
-            dayVisible[row] = true;
-            yearVisible[row] = true;
-            hourVisible[row] = true;
-            minuteVisible[row] = true;
-            ampmVisible[row] = true;
-        }
-
-        public void SetVisible(string type, bool toggle, bool month = true, bool day = true, bool year = true, bool hour = true, bool minute = true, bool amPm = true)
-        {
-            int row = RowNameToInt(type);
-
-            if (toggle)
-            {
-                if (!month)
-                    monthVisible[row] = false;
-
-                if (!day)
-                    dayVisible[row] = false;
-
-                if (!year)
-                    yearVisible[row] = false;
-
-                if (!hour)
-                    hourVisible[row] = false;
-
-                if (!minute)
-                    minuteVisible[row] = false;
-
-                if (!amPm)
-                    ampmVisible[row] = false;
-            }
-            else
-            {
-                if (month)
-                    monthVisible[row] = false;
-
-                if (day)
-                    dayVisible[row] = false;
-
-                if (year)
-                    yearVisible[row] = false;
-
-                if (hour)
-                    hourVisible[row] = false;
-
-                if (minute)
-                    minuteVisible[row] = false;
-
-                if (amPm)
-                    ampmVisible[row] = false;
-            }
-        }
-
-        public void SetOff()
-        {
-            IsHUDVisible = false;
-            IsTickVisible = false;
-            Empty = EmptyType.Hide;
-
-            for (int row = 0; row < 3; row++)
-                dates[row] = default;
-
-            for (int column = 0; column < 10; column++)
-                for (int row = 0; row < 20; row++)
-                    ledState[column][row] = false;
-        }
-
-        public void SetLedState(bool[][] _ledState)
-        {
-            ledState = _ledState;
-        }
-
         private Matrix CurrentScale()
         {
-            var gameWorldSize = new Vector2(background.Width + sidBackground.Width, background.Height + speedo.Height * speedoScale);
+            var gameWorldSize = new Vector2(TCD.Width + SID.Width, TCD.Height + Speedometer.Height * speedoScale);
             var vp = GraphicsDevice.Viewport;
 
             float scaleX = vp.Width / gameWorldSize.X;
@@ -289,42 +191,42 @@ namespace TimeCircuits
             // TODO: Add your drawing code here
             _spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, CurrentScale());            
 
-            if (IsHUDVisible)
+            if (Properties.IsHUDVisible)
             {                
-                _spriteBatch.Draw(speedo, Vector2.Zero, null, Color.White, 0, Vector2.Zero, speedoScale, SpriteEffects.None, 1);
+                _spriteBatch.Draw(Speedometer, Vector2.Zero, null, Color.White, 0, Vector2.Zero, speedoScale, SpriteEffects.None, 1);
 
-                if (Speed < 10)
-                    _spriteBatch.Draw(speedoNumbers[Speed], GetSpeedoPos(1), null, Color.White, 0, Vector2.Zero, speedoScale, SpriteEffects.None, 1);
+                if (Properties.Speed < 10)
+                    _spriteBatch.Draw(speedoNumbers[Properties.Speed], GetSpeedoPos(1), null, Color.White, 0, Vector2.Zero, speedoScale, SpriteEffects.None, 1);
                 else
                 {
                     for (int num = 0; num < 2; num++)
                     {
-                        int pos = (int)Char.GetNumericValue(Speed.ToString()[num]);
+                        int pos = (int)Char.GetNumericValue(Properties.Speed.ToString()[num]);
                         _spriteBatch.Draw(speedoNumbers[pos], GetSpeedoPos(num), null, Color.White, 0, Vector2.Zero, speedoScale, SpriteEffects.None, 1);
                     }
                 }
 
-                if (Empty != EmptyType.Hide)
+                if (Properties.Empty != EmptyType.Hide)
                 {
-                    float emptyX = speedo.Width * speedoScale + (background.Width - speedo.Width * speedoScale) / 2 - (empty.Width * 1.5f) / 2;
-                    float emptyY = (speedo.Height * speedoScale) / 2 - (empty.Height * 1.5f) / 2;
+                    float emptyX = Speedometer.Width * speedoScale + (TCD.Width - Speedometer.Width * speedoScale) / 2 - (EmptyLed.Width * 1.5f) / 2;
+                    float emptyY = (Speedometer.Height * speedoScale) / 2 - (EmptyLed.Height * 1.5f) / 2;
 
-                    _spriteBatch.Draw(Empty == EmptyType.Off ? empty : emptyGlow, new Vector2(emptyX, emptyY), null, Color.White, 0, Vector2.Zero, 1.5f, SpriteEffects.None, 1);
+                    _spriteBatch.Draw(Properties.Empty == EmptyType.Off ? EmptyLed : EmptyLedGlow, new Vector2(emptyX, emptyY), null, Color.White, 0, Vector2.Zero, 1.5f, SpriteEffects.None, 1);
                 }
 
-                _spriteBatch.Draw(background, new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                _spriteBatch.Draw(TCD, new Vector2(0, Speedometer.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
 
                 for (int row = 0; row < 3; row++)
                 {
-                    DateTime dateTime = dates[row];
+                    DateTime dateTime = Properties.Date[row];
 
                     if (dateTime == null || dateTime == default)
                         break;
 
-                    if (monthVisible[row])
+                    if (Properties.MonthVisible[row])
                         _spriteBatch.Draw(months[row][dateTime.Month - 1], GetMonthPos(row), null, Color.White, 0, Vector2.Zero, 0.9f, SpriteEffects.None, 1);
 
-                    if (dayVisible[row])
+                    if (Properties.DayVisible[row])
                     {
                         if (dateTime.Day < 10)
                         {
@@ -341,7 +243,7 @@ namespace TimeCircuits
                         }
                     }
 
-                    if (yearVisible[row])
+                    if (Properties.YearVisible[row])
                     {
                         for (int num = 0; num < 4; num++)
                         {
@@ -350,17 +252,17 @@ namespace TimeCircuits
                         }
                     }
 
-                    if (ampmVisible[row])
+                    if (Properties.AmPmVisible[row])
                     {
                         if (dateTime.Hour > 12)
-                            _spriteBatch.Draw(ampm[row][1], new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                            _spriteBatch.Draw(ampm[row][1], new Vector2(0, Speedometer.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
                         else
-                            _spriteBatch.Draw(ampm[row][0], new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                            _spriteBatch.Draw(ampm[row][0], new Vector2(0, Speedometer.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
                     }
 
                     string time = dateTime.ToString("hhmm");
 
-                    if (hourVisible[row])
+                    if (Properties.HourVisible[row])
                     {
                         for (int num = 0; num < 2; num++)
                         {
@@ -369,7 +271,7 @@ namespace TimeCircuits
                         }
                     }
 
-                    if (minuteVisible[row])
+                    if (Properties.MinuteVisible[row])
                     {
                         for (int num = 0; num < 2; num++)
                         {
@@ -380,18 +282,18 @@ namespace TimeCircuits
 
                 }
 
-                if (IsTickVisible)
-                    _spriteBatch.Draw(tick, new Vector2(0, speedo.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                if (Properties.IsTickVisible)
+                    _spriteBatch.Draw(TCDTick, new Vector2(0, Speedometer.Height * speedoScale), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
 
-                _spriteBatch.Draw(sidBackground, new Vector2(background.Width, 0), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                _spriteBatch.Draw(SID, new Vector2(TCD.Width, 0), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
 
                 for (int column = 0; column < 10; column++)
                     for(int row = 0; row < 20; row++)
-                        if (ledState[column][row])
+                        if (Properties.LedState[column][row])
                             _spriteBatch.Draw(GetLedColor(row), GetLedOffset(column, row), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             } 
             else
-                _spriteBatch.Draw(logo, new Vector2((sidBackground.Width + background.Width - logo.Width) / 2, (background.Height + speedo.Height * speedoScale - logo.Height) / 2), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+                _spriteBatch.Draw(BTTFVLogo, new Vector2((SID.Width + TCD.Width - BTTFVLogo.Width) / 2, (TCD.Height + Speedometer.Height * speedoScale - BTTFVLogo.Height) / 2), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
 
             _spriteBatch.End();
 
@@ -402,7 +304,7 @@ namespace TimeCircuits
 
         public Vector2 GetLedOffset(int column, int row)
         {
-            Vector2 origin = new Vector2(background.Width + 152, 972);
+            Vector2 origin = new Vector2(TCD.Width + 152, 972);
 
             if (column == 0 && row == 0)
                 return origin;
@@ -413,11 +315,11 @@ namespace TimeCircuits
         public Texture2D GetLedColor(int row)
         {
             if (row < 13)
-                return sidLedGreen;
+                return SIDLedGreen;
             else if (row < 19)
-                return sidLedYellow;
+                return SIDLedYellow;
 
-            return sidLedRed;
+            return SIDLedRed;
         }
 
         public Vector2 GetRowOffset(int row)
@@ -425,7 +327,7 @@ namespace TimeCircuits
             switch (row)
             {
                 case 0:
-                    return new Vector2(0, 82 + speedo.Height * speedoScale);
+                    return new Vector2(0, 82 + Speedometer.Height * speedoScale);
                 case 1:
                     return new Vector2(0, 291) + GetRowOffset(0);
                 default:

@@ -9,6 +9,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
     <AssemblyName>BackToTheFutureV.HUD.Desktop</AssemblyName>
+    <StartupObject>TimeCircuits.Desktop.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icon.ico" />
