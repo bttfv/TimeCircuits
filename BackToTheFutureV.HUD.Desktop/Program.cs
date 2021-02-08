@@ -1,5 +1,5 @@
-﻿using System;
-using BackToTheFutureV.HUD.Core;
+﻿using BackToTheFutureV.HUD.Core;
+using System;
 
 namespace TimeCircuits.Desktop
 {
@@ -25,11 +25,11 @@ namespace TimeCircuits.Desktop
                     for (int row = 0; row < 20; row++)
                         game.Properties.LedState[column][row] = true;
 #endif
-      
+
                 HUDNetwork.Start(game);
 
                 game.Run();
-              }                
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using System;
 
 namespace BackToTheFutureV.HUD.Core
-{    
+{
     public class HUDDisplay : Game
     {
         private DateTime _lastUpdate;
@@ -181,7 +181,7 @@ namespace BackToTheFutureV.HUD.Core
             GraphicsDevice.Clear(Color.Transparent);
 
             // TODO: Add your drawing code here
-            SpriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, CurrentScale());            
+            SpriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, CurrentScale());
 
             if (Properties.IsHUDVisible)
             {
@@ -273,14 +273,14 @@ namespace BackToTheFutureV.HUD.Core
 
                 if (Properties.IsTickVisible)
                     SpriteBatch.Draw(TCDTick, new Vector2(0, TCDY), Color.White);
-                
+
                 SpriteBatch.Draw(SID, new Vector2(TCD.Width, 0), Color.White);
 
                 for (int column = 0; column < 10; column++)
-                    for(int row = 0; row < 20; row++)
+                    for (int row = 0; row < 20; row++)
                         if (Properties.LedState[column][row])
                             SpriteBatch.Draw(GetLedColor(row), GetLedOffset(column, row), Color.White);
-            } 
+            }
             else
                 SpriteBatch.Draw(BTTFVLogo, new Vector2((SID.Width + TCD.Width - BTTFVLogo.Width) / 2, (SID.Height - BTTFVLogo.Height) / 2), Color.White);
 
@@ -289,7 +289,7 @@ namespace BackToTheFutureV.HUD.Core
             base.Draw(gameTime);
         }
 
-#region "Position routines"
+        #region "Position routines"
 
         public Vector2 GetLedOffset(int column, int row)
         {
@@ -298,7 +298,7 @@ namespace BackToTheFutureV.HUD.Core
             if (column == 0 && row == 0)
                 return origin;
 
-            return origin + new Vector2(column * 49.6f , - row * 49.3f);
+            return origin + new Vector2(column * 49.6f, -row * 49.3f);
         }
 
         public Texture2D GetLedColor(int row)
@@ -383,6 +383,6 @@ namespace BackToTheFutureV.HUD.Core
                     return new Vector2(78, 0) + GetMinutePos(row, num - 1);
             }
         }
-#endregion
+        #endregion
     }
 }

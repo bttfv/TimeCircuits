@@ -2,9 +2,8 @@ using Android.App;
 using Android.Content.PM;
 using Android.OS;
 using Android.Views;
-using Microsoft.Xna.Framework;
-using System;
 using BackToTheFutureV.HUD.Core;
+using Microsoft.Xna.Framework;
 
 namespace TimeCircuits.Android
 {
