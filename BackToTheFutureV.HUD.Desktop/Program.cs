@@ -6,9 +6,9 @@ namespace TimeCircuits.Desktop
     public static class Program
     {
         [STAThread]
-        static void Main()
+        private static void Main()
         {
-            using (var game = new HUDDisplay())
+            using (HUDDisplay game = new HUDDisplay())
             {
 
 #if DEBUG

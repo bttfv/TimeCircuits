@@ -154,8 +154,8 @@ namespace BackToTheFutureV.HUD.Core
 
         private Matrix CurrentScale()
         {
-            var gameWorldSize = new Vector2(TCD.Width + SID.Width, SID.Height);
-            var vp = GraphicsDevice.Viewport;
+            Vector2 gameWorldSize = new Vector2(TCD.Width + SID.Width, SID.Height);
+            Viewport vp = GraphicsDevice.Viewport;
 
             float scaleX = vp.Width / gameWorldSize.X;
             float scaleY = vp.Height / gameWorldSize.Y;
@@ -195,7 +195,7 @@ namespace BackToTheFutureV.HUD.Core
                 {
                     for (int num = 0; num < 2; num++)
                     {
-                        int pos = (int)Char.GetNumericValue(Properties.Speed.ToString()[num]);
+                        int pos = (int)char.GetNumericValue(Properties.Speed.ToString()[num]);
                         SpriteBatch.Draw(SpeedoNumber[pos], GetSpeedoPos(num), null, Color.White, 0, Vector2.Zero, SpeedometerScale, SpriteEffects.None, 1);
                     }
                 }
@@ -226,7 +226,7 @@ namespace BackToTheFutureV.HUD.Core
                         {
                             for (int num = 0; num < 2; num++)
                             {
-                                int pos = (int)Char.GetNumericValue(dateTime.Day.ToString()[num]);
+                                int pos = (int)char.GetNumericValue(dateTime.Day.ToString()[num]);
                                 SpriteBatch.Draw(TCDNumber[row][pos], GetDayPos(row, num), null, Color.White, 0, Vector2.Zero, TCDElementScale, SpriteEffects.None, 1);
                             }
                         }
@@ -236,7 +236,7 @@ namespace BackToTheFutureV.HUD.Core
                     {
                         for (int num = 0; num < 4; num++)
                         {
-                            int pos = (int)Char.GetNumericValue(dateTime.Year.ToString()[num]);
+                            int pos = (int)char.GetNumericValue(dateTime.Year.ToString()[num]);
                             SpriteBatch.Draw(TCDNumber[row][pos], GetYearPos(row, num), null, Color.White, 0, Vector2.Zero, TCDElementScale, SpriteEffects.None, 1);
                         }
                     }
@@ -255,7 +255,7 @@ namespace BackToTheFutureV.HUD.Core
                     {
                         for (int num = 0; num < 2; num++)
                         {
-                            int pos = (int)Char.GetNumericValue(time[num]);
+                            int pos = (int)char.GetNumericValue(time[num]);
                             SpriteBatch.Draw(TCDNumber[row][pos], GetHourPos(row, num), null, Color.White, 0, Vector2.Zero, TCDElementScale, SpriteEffects.None, 1);
                         }
                     }
@@ -264,7 +264,7 @@ namespace BackToTheFutureV.HUD.Core
                     {
                         for (int num = 0; num < 2; num++)
                         {
-                            int pos = (int)Char.GetNumericValue(time[num + 2]);
+                            int pos = (int)char.GetNumericValue(time[num + 2]);
                             SpriteBatch.Draw(TCDNumber[row][pos], GetMinutePos(row, num), null, Color.White, 0, Vector2.Zero, TCDElementScale, SpriteEffects.None, 1);
                         }
                     }

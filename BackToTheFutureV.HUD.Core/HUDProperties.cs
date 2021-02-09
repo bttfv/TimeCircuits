@@ -118,7 +118,7 @@ namespace BackToTheFutureV.HUD.Core
 
         public static HUDProperties FromData(byte[] data)
         {
-            using (var stream = new MemoryStream(data))
+            using (MemoryStream stream = new MemoryStream(data))
             {
                 try
                 {
@@ -133,7 +133,7 @@ namespace BackToTheFutureV.HUD.Core
 
         public static implicit operator byte[](HUDProperties command)
         {
-            using (var stream = new MemoryStream())
+            using (MemoryStream stream = new MemoryStream())
             {
                 formatter.Serialize(stream, command);
                 return stream.ToArray();
