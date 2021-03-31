@@ -16,7 +16,7 @@ namespace BackToTheFutureV.HUD.Core
     {
         private static BinaryFormatter formatter = new BinaryFormatter();
 
-        public bool[][] LedState;
+        public int[] CurrentHeight = new int[10];
 
         public DateTime[] Date = new DateTime[3];
 
@@ -24,6 +24,7 @@ namespace BackToTheFutureV.HUD.Core
         public bool IsTickVisible { get; set; } = false;
         public EmptyType Empty { get; set; } = EmptyType.Hide;
         public int Speed { get; set; } = 0;
+        public bool ThreeDigitsSpeedo { get; set; }
 
         public bool[] MonthVisible { get; set; } = new bool[3];
         public bool[] DayVisible { get; set; } = new bool[3];
@@ -31,15 +32,6 @@ namespace BackToTheFutureV.HUD.Core
         public bool[] HourVisible { get; set; } = new bool[3];
         public bool[] MinuteVisible { get; set; } = new bool[3];
         public bool[] AmPmVisible { get; set; } = new bool[3];
-
-        public HUDProperties()
-        {
-            LedState = new bool[10][];
-
-            for (int column = 0; column < 10; column++)
-                LedState[column] = new bool[20];
-
-        }
 
         private int RowNameToInt(string name)
         {

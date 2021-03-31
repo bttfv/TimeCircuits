@@ -277,9 +277,8 @@ namespace BackToTheFutureV.HUD.Core
                 SpriteBatch.Draw(SID, new Vector2(TCD.Width, 0), Color.White);
 
                 for (int column = 0; column < 10; column++)
-                    for (int row = 0; row < 20; row++)
-                        if (Properties.LedState[column][row])
-                            SpriteBatch.Draw(GetLedColor(row), GetLedOffset(column, row), Color.White);
+                    for (int row = 0; row < Properties.CurrentHeight[column]; row++)
+                        SpriteBatch.Draw(GetLedColor(row), GetLedOffset(column, row), Color.White);
             }
             else
                 SpriteBatch.Draw(BTTFVLogo, new Vector2((SID.Width + TCD.Width - BTTFVLogo.Width) / 2, (SID.Height - BTTFVLogo.Height) / 2), Color.White);
