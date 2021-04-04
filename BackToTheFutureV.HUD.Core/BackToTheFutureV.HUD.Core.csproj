@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Configurations>Debug;Release;Release (Test)</Configurations>
+    <Configurations>Debug;Release;Release (Test);Debug (Test)</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Content\Content.mgcb" />
